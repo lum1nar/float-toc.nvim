@@ -1,4 +1,8 @@
-require("floating-toc")
+require("floating-toc").setup({
+    bullet_icon = "⁍",
+    indent_width = 4,
+
+})
 
 vim.notify = require("notify")
 -- vim.notify("123", vim.log.levels.INFO)
