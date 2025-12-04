@@ -7,7 +7,6 @@ M.state = {
     width_ratio = 0.4,
     height_ratio = 0.6,
 }
-
 local function generate_toc()
     local s = M.state
     local toc_lines = {}
@@ -54,20 +53,35 @@ M.float_toc_toggle = function()
     -- Generate TOC
     local toc_lines, mapping = generate_toc()
 
+    if next(toc_lines) == nil then
+        -- will this cause error if one doens't has nvim-notify.vim installed ?
+        -- No, vanilla vim.notify supports opts argument by default, it has no use though
+        vim.notify("Cannot Generate TOC !", vim.log.levels.ERROR, { title = "float-toc" })
+        return
+    end
+
     -- get the correspondent toc element of current line
     local cur_line = vim.api.nvim_win_get_cursor(0)[1]
-    local toc_target = 0
-    local last_toc_idx
+    local toc_target = 1
+    local last_toc_idx = 1
+    local found_toc_target = false
 
     for toc_idx, buf_line in ipairs(mapping) do
         if buf_line == cur_line then
             toc_target = toc_idx
+            found_toc_target = true
             break
         elseif buf_line > cur_line then
             toc_target = last_toc_idx
+            found_toc_target = true
             break
         end
         last_toc_idx = toc_idx
+    end
+
+    -- EDGE CASE: the last hash
+    if not found_toc_target then
+        toc_target = #toc_lines
     end
 
     -- whether to put it in the buffer list ? shown in :ls -> false
@@ -86,9 +100,14 @@ M.float_toc_toggle = function()
         col = (vim.o.columns - width) / 2,
         style = "minimal",
         border = 'rounded',
-        title = " TOC ",
+        title = " Table of Content ",
         title_pos = "center",
     })
+
+    -- enable curosr line highlight
+    vim.api.nvim_set_option_value("cursorline", true, { win = s.toc_win })
+
+    -- make the cursor invisible
 
     -- Jump to correspondent toc element
     vim.api.nvim_win_set_cursor(0, { toc_target, 0 })
@@ -114,7 +133,7 @@ M.float_toc_toggle = function()
         -- {row = target_line, column = 0}
         vim.api.nvim_win_set_cursor(0, { ori_target, 0 })
     end
-    -- Make sure to add the keymap in toc_buf
+    -- Make sure to add the keymap in toc_buf instead of the current buf
     , { buffer = s.toc_buf })
 end
 
