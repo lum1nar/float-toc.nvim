@@ -1,7 +1,7 @@
--- vim.notify("123456", vim.log.levels.INFO);
---
---
 local M = {};
+
+local buf = nil
+local win = nil
 
 local function generate_toc()
     local toc = {}
@@ -14,26 +14,36 @@ local function generate_toc()
         if level then
             -- create a indent consist of white space of length #level - 1
             -- #level is short for string.len(level)
-            local indent = string.rep("  ", #level - 1)
+            local indent = string.rep("   ", #level - 1)
             -- push the element into the table
-            table.insert(toc, indent .. "- " .. title);
+            table.insert(toc, indent .. "-  " .. title);
         end
     end
     return toc
 end
 
-local function open_toc_float(toc_table)
+M.float_toc_toggle = function()
+    if win and vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+        win = nil
+        buf = nil
+        return
+    end
+
+    local toc_table = generate_toc();
+
     -- whether to put it in the buffer list ? shown in :ls -> false
     -- whether the buffer is throwaway buffer(disposable)  -> true
-    local buf = vim.api.nvim_create_buf(false, true)
+    buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, toc_table)
 
     -- set win height and width
     local width = 50;
     local height = #toc_table + 2;
     height = 20;
+
     -- open buffer and enter it as it opens
-    print(string.format("line: %d, column: %d", vim.o.lines, vim.o.columns))
-    local win = vim.api.nvim_open_win(buf, true, {
+    win = vim.api.nvim_open_win(buf, true, {
         relative = 'editor',
         width = width,
         height = height,
@@ -41,18 +51,10 @@ local function open_toc_float(toc_table)
         -- ( vim_height - win_height ) / 2, create margin for top and bottom, which will center the win
         row = (vim.o.lines - height) / 2,
         col = (vim.o.columns - width) / 2,
-        -- style = "minimal",
+        style = "minimal",
         border = 'rounded',
 
     })
-end
-
-M.print = function()
-    local toc_table = generate_toc();
-    open_toc_float(toc_table);
-    -- for _, element in ipairs(toc) do
-    --     print(element);
-    -- end
 end
 
 return M
