@@ -36,7 +36,6 @@ local function close_toc()
     vim.api.nvim_win_close(s.toc_win, true)
     s.toc_win = nil
     s.toc_buf = nil
-    return
 end
 
 M.float_toc_toggle = function()
@@ -48,19 +47,33 @@ M.float_toc_toggle = function()
     end
 
     -- Set up height and width of the new win
+    -- use math.floor to ensure an integer value
     local width = math.floor(vim.o.columns * s.width_ratio)
     local height = math.floor(vim.o.lines * s.height_ratio)
 
-    -- generate TOC
+    -- Generate TOC
     local toc_lines, mapping = generate_toc()
+
+    -- get the correspondent toc element of current line
+    local cur_line = vim.api.nvim_win_get_cursor(0)[1]
+    local toc_target = 0
+    local last_toc_idx
+
+    for toc_idx, buf_line in ipairs(mapping) do
+        if buf_line == cur_line then
+            toc_target = toc_idx
+            break
+        elseif buf_line > cur_line then
+            toc_target = last_toc_idx
+            break
+        end
+        last_toc_idx = toc_idx
+    end
 
     -- whether to put it in the buffer list ? shown in :ls -> false
     -- whether the buffer is throwaway buffer(disposable)  -> true
     s.toc_buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(s.toc_buf, 0, -1, false, toc_lines)
-
-    -- get the correspondent toc element of current line
-    local cur_line = vim.api.nvim_win_get_cursor(0)[1]
 
     -- open buffer and enter it as it opens
     s.toc_win = vim.api.nvim_open_win(s.toc_buf, true, {
@@ -77,6 +90,9 @@ M.float_toc_toggle = function()
         title_pos = "center",
     })
 
+    -- Jump to correspondent toc element
+    vim.api.nvim_win_set_cursor(0, { toc_target, 0 })
+
     --debug: mapping
     -- for key, value in pairs(mapping) do
     --     print(key .. ":" .. value)
@@ -85,16 +101,10 @@ M.float_toc_toggle = function()
     -- Jumping with <cr> key
     vim.keymap.set("n", "<cr>", function()
         local cursor = vim.api.nvim_win_get_cursor(s.toc_win);
-        -- _ is the table index, cursor[1] = row, cursor[2] = column
-
-        -- for _, content in ipairs(cursor) do
-        --     print(_ .. "?\n")
-        --     print(content)
-        -- end
         local toc_line = cursor[1]
-        local target_line = mapping[toc_line]
+        local ori_target = mapping[toc_line]
 
-        -- Close TOC
+        -- close toc win and switch back to original win
         close_toc()
 
         -- 12.04.2025, remove `ori_win` variable
@@ -102,7 +112,7 @@ M.float_toc_toggle = function()
         -- the main buffer, we don't need to keep track of the ori_win anymore
         vim.api.nvim_set_current_win(0)
         -- {row = target_line, column = 0}
-        vim.api.nvim_win_set_cursor(0, { target_line, 0 })
+        vim.api.nvim_win_set_cursor(0, { ori_target, 0 })
     end
     -- Make sure to add the keymap in toc_buf
     , { buffer = s.toc_buf })
