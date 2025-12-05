@@ -1,6 +1,6 @@
-![demo](./static/demo.png)
-
 # Float TOC — A Tiny Floating Table-of-Contents for Neovim
+
+![demo](./static/demo.png)
 
 A minimal, modern, floating Table-of-Contents (TOC) viewer for Markdown in Neovim.
 Open a lightweight floating window that shows your document headings, jump instantly, and keep your writing or note‑taking workflow clean.
