@@ -14,6 +14,7 @@ M.config = {
 
 M.setup = function(opts)
     opts = opts or {}
+    -- merge table
     -- force mode, if one key has multiple values, the one from
     -- the rightmost table will be chosen
     M.config = vim.tbl_deep_extend("force", M.config, opts)
@@ -22,26 +23,26 @@ end
 local function generate_toc()
     local c = M.config
     local toc_entries = {}
-    local toc_to_main_buf_map = {}
+    local toc_to_source_map = {}
 
     -- read current buffer(0) form line start(0) to end(-1)
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    for line_num, line_text in ipairs(lines) do -- only the regex insdie the capture group will be returned %s stands for space
+    local source_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    for line_num, line_text in ipairs(source_lines) do -- only the regex insdie the capture group will be returned %s stands for space
         -- if the string only contains hash, or there's no space between hash and title
         -- the match will fail, e.g #, ##, #h1, ##h2
         local heading_level, title = string.match(line_text, "^(#+)%s+(.*)")
-        if heading_level then
+        if heading_level and title then
             -- create a indent consist of white space of length #level - 1
             -- #level is an abbr for string.len(level)
             local indent = string.rep(" ", c.indent_width)
-            local level_indent = string.rep(indent, #heading_level - 1)
+            local full_indent = string.rep(indent, #heading_level - 1)
             -- push the element into the table
-            table.insert(toc_entries, level_indent .. c.bullet_icon .. " " .. title)
+            table.insert(toc_entries, full_indent .. c.bullet_icon .. " " .. title)
             -- create mapping between toc buffer and current buffer
-            toc_to_main_buf_map[#toc_entries] = line_num
+            toc_to_source_map[#toc_entries] = line_num
         end
     end
-    return toc_entries, toc_to_main_buf_map
+    return toc_entries, toc_to_source_map
 end
 
 local function close_toc()
@@ -66,7 +67,7 @@ M.float_toc_toggle = function()
     local toc_win_height = math.floor(vim.o.lines * c.height_ratio)
 
     -- Generate TOC
-    local toc_entries, toc_to_main_buf_map = generate_toc()
+    local toc_entries, toc_to_source_map = generate_toc()
 
     if next(toc_entries) == nil then
         -- will this cause error if one doens't has nvim-notify.vim installed ?
@@ -76,22 +77,22 @@ M.float_toc_toggle = function()
     end
 
     -- get the correspondent toc entry of current line
-    local main_win_cur_line = vim.api.nvim_win_get_cursor(0)[1]
+    local source_win_cur_line = vim.api.nvim_win_get_cursor(0)[1]
     local toc_win_line_target = 1
-    local prev_toc_idx = 1
+    local prev_toc_index = 1
     local has_toc_target = false
 
-    for toc_idx, toc_buf_line in ipairs(toc_to_main_buf_map) do
-        if toc_buf_line == main_win_cur_line then
-            toc_win_line_target = toc_idx
+    for toc_index, toc_buf_line in ipairs(toc_to_source_map) do
+        if toc_buf_line == source_win_cur_line then
+            toc_win_line_target = toc_index
             has_toc_target = true
             break
-        elseif toc_buf_line > main_win_cur_line then
-            toc_win_line_target = prev_toc_idx
+        elseif toc_buf_line > source_win_cur_line then
+            toc_win_line_target = prev_toc_index
             has_toc_target = true
             break
         end
-        prev_toc_idx = toc_idx
+        prev_toc_index = toc_index
     end
 
     -- EDGE CASE: the last hash
@@ -102,6 +103,8 @@ M.float_toc_toggle = function()
     -- whether to put it in the buffer list ? shown in :ls -> false
     -- whether the buffer is throwaway buffer(disposable)  -> true
     s.toc_buf = vim.api.nvim_create_buf(false, true)
+
+    -- write toc_entries to the toc_buf
     vim.api.nvim_buf_set_lines(s.toc_buf, 0, -1, false, toc_entries)
 
     -- open buffer and enter it as it opens
@@ -132,19 +135,19 @@ M.float_toc_toggle = function()
 
     -- Jumping with <cr> key
     vim.keymap.set("n", "<cr>", function()
-        local cursor = vim.api.nvim_win_get_cursor(s.toc_win);
-        local toc_row = cursor[1]
-        local main_win_line_target = toc_to_main_buf_map[toc_row]
+        local toc_cursor = vim.api.nvim_win_get_cursor(s.toc_win);
+        local toc_row = toc_cursor[1]
+        local source_win_line_target = toc_to_source_map[toc_row]
 
         -- close toc win and switch back to original win
         close_toc()
 
         -- 12.04.2025, remove `ori_win` variable
         -- Since the toc_buf, toc_win is now closed, win 0 is now
-        -- the main buffer, we don't need to keep track of the ori_win anymore
+        -- the source buffer, we don't need to keep track of the ori_win anymore
         vim.api.nvim_set_current_win(0)
         -- {row = target_line, column = 0}
-        vim.api.nvim_win_set_cursor(0, { main_win_line_target, 0 })
+        vim.api.nvim_win_set_cursor(0, { source_win_line_target, 0 })
     end
     -- Make sure to add the keymap in toc_buf instead of the current buf
     , { buffer = s.toc_buf })
