@@ -1,48 +1,61 @@
-# Float TOC — A Tiny Floating Table-of-Contents for Neovim
+# Float TOC — A Minimal Floating Table-of-Contents for Neovim
+
+![MIT](https://img.shields.io/badge/license-MIT-lightgray.svg)
+![nvim](https://img.shields.io/badge/Neovim-0.9+-gray.svg)
 
 ![demo](./static/demo.png)
-A minimal, modern, floating Table-of-Contents (TOC) viewer for Markdown in Neovim.
-Open a lightweight floating window that shows your document headings, jump instantly, and keep your writing or note‑taking workflow clean.
-No heavy UI. No complex setup. Just a smooth TOC.
+_Lightweight floating TOC for Markdown — clean, simple, distraction-free._
+
+A tiny, modern floating Table-of-Contents viewer for Markdown in Neovim.
+Pop open a minimal floating window, jump across headings instantly, and keep your writing workflow clean.
+
+---
 
 ## ✨ Features
 
 - 🪶 **Floating TOC window** — stays out of your way
-- 🧭 **Jump to headings** with a single press
-- ⚙️ **Simple configuration** — tweak icons, width/height ratio, and indentation
-- 💡 **Great for note‑taking, documentation, technical writing**
+- 🧭 **Jump to headings** instantly
+- ⚙️ **Configurable** — choose icon, indentation, window ratio
+- 📝 **Perfect for note-taking, documentation, or writing**
+
+---
 
 ## 📦 Installation
 
-Lazy.nvim example:
+Example using **lazy.nvim**:
 
 ```lua
 {
     "lum1nar/float-toc",
-    config = function()
-        require("float-toc").setup()
-    end,
+    opts = {
+    -- your options here
+    }
 }
 ```
+
+---
 
 ## ⚙️ Setup
 
 ```lua
 require("float-toc").setup({
-    bullet_icon = "⁍",   -- Icon used before each heading
-    -- Example: `"•"`, `"→"`, `"#"`, `"▸"`
-    indent_width = 4,      -- Spaces added per heading level
-    width_ratio = 0.4,     -- TOC window width relative to editor
-    height_ratio = 0.6,    -- TOC window height relative to editor
+    bullet_icon = "⁍",   -- icon before each heading
+    -- bullet_icon options: { "•", "·", "●", "▪", "▎", "▏", "▍", "╎", "▶", "›", "▸", "◆", "◇", "◦", "✦" }
+    indent_width = 4,      -- indentation per level
+    width_ratio = 0.4,     -- window width relative to editor
+    height_ratio = 0.6,    -- window height relative to editor
 })
 ```
 
+Optional keymap:
+
 ```lua
--- Add Custom Keymap
-vim.keymap.set("n", "<leader>t", "<cmd>lua require('float-toc').toggle()<cr>")
+vim.keymap.set("n", "<leader>t", "<cmd>FloatTOC<cr>")
 ```
 
-All values are optional — the defaults work out of the box.
+All settings are optional — the defaults work out of the box.
+
+---
 
 ## 🚀 Usage
 
@@ -51,5 +64,3 @@ Open the floating TOC:
 ```vim
 :FloatTOC
 ```
-
-Enjoy a blazingly fast Markdown workflow!
