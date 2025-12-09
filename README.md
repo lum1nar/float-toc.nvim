@@ -1,10 +1,6 @@
 # Float TOC — A Tiny Floating Table-of-Contents for Neovim
 
-![demo](./static/demo.png)
-
-A minimal, modern, floating Table-of-Contents (TOC) viewer for Markdown in Neovim.
-Open a lightweight floating window that shows your document headings, jump instantly, and keep your writing or note‑taking workflow clean.
-
+![demo](./static/demo.png) A minimal, modern, floating Table-of-Contents (TOC) viewer for Markdown in Neovim. Open a lightweight floating window that shows your document headings, jump instantly, and keep your writing or note‑taking workflow clean.
 No heavy UI. No complex setup. Just a smooth TOC.
 
 ## ✨ Features
@@ -37,6 +33,11 @@ require("float-toc").setup({
     width_ratio = 0.4,     -- TOC window width relative to editor
     height_ratio = 0.6,    -- TOC window height relative to editor
 })
+```
+
+```lua
+# Add Custom Keymap
+vim.keymap.set("n", "<leader>t", "<cmd>lua require('float-toc').toggle()<cr>")
 ```
 
 All values are optional — the defaults work out of the box.
