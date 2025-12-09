@@ -1,10 +1,10 @@
-# Float TOC — A Minimal Floating Table-of-Contents for Neovim
+# float-toc.nvim
 
 ![MIT](https://img.shields.io/badge/license-MIT-lightgray.svg)
 ![nvim](https://img.shields.io/badge/Neovim-0.9+-gray.svg)
 
-![demo](./static/demo.png)
 _Lightweight floating TOC for Markdown — clean, simple, distraction-free._
+![demo](./static/demo.png)
 
 A tiny, modern floating Table-of-Contents viewer for Markdown in Neovim.
 Pop open a minimal floating window, jump across headings instantly, and keep your writing workflow clean.
