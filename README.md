@@ -42,8 +42,6 @@ vim.keymap.set("n", "<leader>t", "<cmd>lua require('float-toc').toggle()<cr>")
 
 All values are optional — the defaults work out of the box.
 
-:warning: You have to run the setup command for :FloatTOC to work
-
 ## 🚀 Usage
 
 Open the floating TOC:
