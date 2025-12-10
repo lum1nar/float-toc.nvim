@@ -26,7 +26,7 @@ Example using **lazy.nvim**:
 
 ```lua
 {
-    "lum1nar/float-toc",
+    "lum1nar/float-toc.nvim",
     opts = {
     -- your options here
     }
